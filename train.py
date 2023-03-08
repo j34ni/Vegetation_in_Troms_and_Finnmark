@@ -14,8 +14,14 @@ print('Finished imports')
 
 layers = 10
 epochs = 100
+hidden_activation = 'sigmoid'
+output_activation='softmax'
 print('Layers = ', layers)
 print('Epochs = ', epochs)
+print('Hidden layer activation = ', hidden_activation)
+print('Output layer activation = ', output_activation)
+expname = str(layers) + 'layers-' + str(epochs) + 'epochs-' + hidden_activation + '-' + output_activation
+print('Experiment name = ', expname)
 
 # Define set two random seeds, one for numpy and one for tensorflow
 print('Random seeds')
@@ -47,11 +53,11 @@ inputs = keras.Input(shape = X_train.shape[1])
 
 # Create the hidden layer
 print('Creating the hidden layer')
-hidden_layer = keras.layers.Dense(layers, activation="relu")(inputs)
+hidden_layer = keras.layers.Dense(layers, activation=hidden_activation)(inputs)
 
 # Create the output layer
 print('Creating the output layer')
-output_layer = keras.layers.Dense(5, activation="softmax")(hidden_layer)
+output_layer = keras.layers.Dense(5, activation=output_activation)(hidden_layer)
 
 # Create a Keras model
 print('Creating the model')
@@ -70,9 +76,9 @@ history = model.fit(X_train, y_train, epochs=epochs)
 print('Generating the history loss plot')
 lineplot = sns.lineplot(x=history.epoch, y=history.history['loss'])
 fig = lineplot.get_figure()
-fig.savefig(str(layers)+'layers-'+str(epochs)+'epochs_loss.png') 
+fig.savefig(expname + '_loss.png') 
 
-model.save(str(layers)+'layers-'+str(epochs)+'epochs_loss')
+model.save(expname)
 
 # Perform a prediction
 print('Forecasting')
