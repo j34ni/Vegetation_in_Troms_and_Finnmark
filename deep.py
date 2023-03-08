@@ -1,6 +1,7 @@
 # Forecasting moss & lichen fractional cover 
 ## with a Neural Network using Keras
-## (Reading input and output files stored locally)
+## (Reading input and output files stored locally as .csv)
+## (Writing X_train, X_test, y_train, y_test locally as .csv too)
 
 print('Starting imports')
 import numpy as np
@@ -9,19 +10,21 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 print('Finished imports')
 
-# Reading local .hdf files
-print('Read input')
+# Reading local .csv files
 path = '/opt/uio/data/'
-input_file = os.path.join(path, 'input.hdf')
-input = pd.read_hdf(input_file)
+input_file = os.path.join(path, 'input.csv')
+print('Reading ', input_file)
+input = pd.read_csv(input_file)
+print('Read')
 
 print('Input')
 print(f'Number of rows: {input.shape[0]:,}')
 print(f'Number of columns: {input.shape[1]}')
 
-print('Read output')
-output_file = os.path.join(path, 'output.hdf')
-output = pd.read_hdf(output_file)
+output_file = os.path.join(path, 'output.csv')
+print('Reading ', output_file)
+output = pd.read_csv(output_file)
+print('Read')
 
 output.rename(columns = {'Bare': 'New_bare', 'Grass': 'New_grass', 'Lichen': 'New_lichen', 'Shrub': 'New_shrub', 'Tree': 'New_tree'}, inplace = True)
 
@@ -30,26 +33,26 @@ print(f'Number of rows: {output.shape[0]:,}')
 print(f'Number of columns: {output.shape[1]}')
 
 # Split data into training and test sets, 
-Xn_train, Xn_test, yn_train, yn_test = train_test_split(input, output, test_size = 0.2, random_state = 0, shuffle = True)
+X_train, X_test, y_train, y_test = train_test_split(input, output, test_size = 0.2, random_state = 0, shuffle = True)
 
-print('Xn_train')
-Xn_train
-Xn_train_file = os.path.join(path, 'Xn_train.hdf')
-Xn_train.to_hdf(Xn_train_file, key='df', mode="w", index=False)
+print('X_train')
+X_train
+X_train_file = os.path.join(path, 'X_train.hdf')
+X_train.to_hdf(X_train_file, key='df', mode="w", index=False)
 
-print('Xn_test')
-Xn_test
-Xn_test_file = os.path.join(path, 'Xn_test.hdf')
-Xn_test.to_hdf(Xn_test_file, key='df', mode="w",  index=False)
+print('X_test')
+X_test
+X_test_file = os.path.join(path, 'X_test.hdf')
+X_test.to_hdf(X_test_file, key='df', mode="w",  index=False)
 
-print('yn_train')
-yn_train
-yn_train_file = os.path.join(path, 'yn_train.hdf')
-yn_train.to_hdf(yn_train_file, key='df', mode="w", index=False)
+print('y_train')
+y_train
+y_train_file = os.path.join(path, 'y_train.hdf')
+y_train.to_hdf(y_train_file, key='dg', mode="w", index=False)
 
-print('yn_test')
-yn_test 
-yn_test_file = os.path.join(path, 'yn_test.hdf')
-yn_test.to_hdf(yn_test_file, key='df', mode="w", index=False)
+print('y_test')
+y_test 
+y_test_file = os.path.join(path, 'y_test.hdf')
+y_test.to_hdf(y_test_file, key='dg', mode="w", index=False)
 
 print('Finishedi!')

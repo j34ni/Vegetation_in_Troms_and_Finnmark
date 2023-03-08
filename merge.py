@@ -1,40 +1,50 @@
-## Merge separate .csv files into input & output
+## Merge yearly .hdf files into input & output .csv files
 
 print('Imports')
 import glob
 import os
 import pandas as pd
 
-# Input to hdf5
+# Input to .csv
 print('Input files')
 path = '/opt/uio/data/'
-xn_filename = 'xn*.csv'
-csv_file_list = glob.glob(os.path.join(path, xn_filename))
-csv_file_list.sort()
-csv_file_list
+x_filename = 'x_2*.hdf'
+file_list = glob.glob(os.path.join(path, x_filename))
+file_list.sort()
+file_list
 
-chunksize = 1000000
-input_filename = os.path.join(path, 'input.hdf')
+input_filename = os.path.join(path, 'input.csv')
 
-for csv_file_name in csv_file_list:
-    print(csv_file_name)
-    chunk_container = pd.read_csv(csv_file_name, chunksize=chunksize)
-    for chunk in chunk_container:
-        chunk.to_hdf(input_filename, key='df', mode="a", index=False)
+for file_name in file_list:
+    print(file_name)
+    df = pd.read_hdf(file_name)
+    df = df.drop(columns=['lat', 'lon'])
+    print(df)
+    if (file_name == file_list[0]):
+         df.to_csv(input_filename, header=True, index=None, sep=',')
+    else:
+        # Append to file
+         df.to_csv(input_filename, mode='a', header=None, index=None, sep=',')
 
-# Output to hdf5
+
+# Output to .csv
 print('Output files')
-yn_filename = 'yn*.csv'
-csv_file_list = glob.glob(os.path.join(path, yn_filename))
-csv_file_list.sort()
-csv_file_list
+y_filename = 'y_2*.hdf'
+file_list = glob.glob(os.path.join(path, y_filename))
+file_list.sort()
+file_list
 
-output_filename = os.path.join(path, 'output.hdf')
+output_filename = os.path.join(path, 'output.csv')
 
-for csv_file_name in csv_file_list:
-    print(csv_file_name)
-    chunk_container = pd.read_csv(csv_file_name, chunksize=chunksize)
-    for chunk in chunk_container:
-        chunk.to_hdf(output_filename, key='df', mode="a", index=False)
+for file_name in file_list:
+    print(file_name)
+    dg = pd.read_hdf(file_name)
+    print(dg)
+    if (file_name == file_list[0]):
+         dg.to_csv(output_filename, header=True, index=None, sep=',')
+    else:
+        # Append to file
+         dg.to_csv(output_filename, mode='a',  header=None, index=None, sep=',')
+
 
 print('Finished')
