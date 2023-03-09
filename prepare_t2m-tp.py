@@ -123,6 +123,7 @@ for Year in range(2015, 2019):
 
     ERA5 = ERA5land.sel(time=slice(str(Year + 1) + '-01-01', str(Year + 1)  + '-12-31'))
     ERA5 = ERA5.isel(time=range(Number_of_days * 24))
+    ERA5 = ERA5.isel(expver = 0)
 
 # Extract ERA5 't2m' field 
     ERA5_t2m = ERA5.where(ERA5['latitude'].isin(dvx['ERA5_lat'].values) & ERA5['longitude'].isin(dvx['ERA5_lon'].values))['t2m']
