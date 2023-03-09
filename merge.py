@@ -1,4 +1,5 @@
 ## Merge yearly .hdf files into input & output .csv files
+# With only lichen cover fraction data from WLC there is nothing in y_2019 <- stop at 2018
 
 print('Imports')
 import glob
@@ -15,7 +16,7 @@ file_list
 
 input_filename = os.path.join(path, 'input.csv')
 
-for file_name in file_list:
+for file_name in file_list[0:-1]:
     print(file_name)
     df = pd.read_hdf(file_name)
     df = df.drop(columns=['lat', 'lon'])
@@ -36,7 +37,7 @@ file_list
 
 output_filename = os.path.join(path, 'output.csv')
 
-for file_name in file_list:
+for file_name in file_list[0:-1]:
     print(file_name)
     dg = pd.read_hdf(file_name)
     print(dg)
