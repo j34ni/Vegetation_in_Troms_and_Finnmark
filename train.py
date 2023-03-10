@@ -12,15 +12,17 @@ from numpy.random import seed
 from tensorflow.random import set_seed
 print('Finished imports')
 
-layers = 3
+Hlayers = 3
+Olayers = 5
 epochs = 10
-hidden_activation = 'relu'
-output_activation='softmax'
-print('Layers = ', layers)
+Hactivation = 'relu'
+Oactivation='softmax'
+print('Hidden layers = ', Hlayers)
+print('Output layers = ', Olayers)
+print('Hidden layer activation = ', Hactivation)
+print('Output layer activation = ', Oactivation)
 print('Epochs = ', epochs)
-print('Hidden layer activation = ', hidden_activation)
-print('Output layer activation = ', output_activation)
-expname = str(layers) + 'layers-' + str(epochs) + 'epochs-' + hidden_activation + '-' + output_activation
+expname = str(Hlayers) + 'Hlayers-' + str(Olayers) + 'Olayers-' + str(epochs) + 'epochs-' + Hactivation + '-' + Oactivation
 print('Experiment name = ', expname)
 
 # Define set two random seeds, one for numpy and one for tensorflow
@@ -53,11 +55,11 @@ inputs = keras.Input(shape = X_train.shape[1])
 
 # Create the hidden layer
 print('Creating the hidden layer')
-hidden_layer = keras.layers.Dense(layers, activation=hidden_activation)(inputs)
+hidden_layer = keras.layers.Dense(Hlayers, activation=Hactivation)(inputs)
 
 # Create the output layer
 print('Creating the output layer')
-output_layer = keras.layers.Dense(5, activation=output_activation)(hidden_layer)
+output_layer = keras.layers.Dense(Olayers, activation=Oactivation)(hidden_layer)
 
 # Create a Keras model
 print('Creating the model')
@@ -76,9 +78,11 @@ history = model.fit(X_train, y_train, epochs=epochs)
 print('Generating the history loss plot')
 lineplot = sns.lineplot(x=history.epoch, y=history.history['loss'])
 fig = lineplot.get_figure()
-fig.savefig(expname + '_loss.png') 
+loss_fig_file = os.path.join(path, 'outputs/' + expname + '_loss.png')
+fig.savefig(loss_fig_file) 
 
-model.save(expname)
+model_file = os.path.join(path, 'outputs/' + expname)
+model.save(model_file)
 
 # Perform a prediction
 print('Forecasting')
