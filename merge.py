@@ -1,5 +1,5 @@
 ## Merge yearly .hdf files into input & output .csv files
-# With only lichen cover fraction data from WLC there is nothing in y_2019 <- stop at 2018
+# Do not use x_2019 and y_2019 (since the latter is all null)
 
 print('Imports')
 import glob

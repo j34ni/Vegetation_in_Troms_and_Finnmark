@@ -12,9 +12,9 @@ from numpy.random import seed
 from tensorflow.random import set_seed
 print('Finished imports')
 
-layers = 10
-epochs = 100
-hidden_activation = 'sigmoid'
+layers = 3
+epochs = 10
+hidden_activation = 'relu'
 output_activation='softmax'
 print('Layers = ', layers)
 print('Epochs = ', epochs)

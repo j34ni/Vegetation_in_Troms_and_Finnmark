@@ -25,7 +25,7 @@ print('Read GLC_AOI')
 # ERA5-land data already available as a netCDF file stored locally
 ## **For now will only use t2p and tp in the ML algorithm** although it may be useful to add sd
 
-ERA5_filename = os.path.join(path, 'reanalysis-era5-land_hourly_2015-01-01_2019-12-31_Troms-Finnmark_T2m-SD-TP.nc')
+ERA5_filename = os.path.join(path, 'reanalysis-era5-land_hourly_2015-01-01_2022-12-31_Troms-Finnmark_T2m-SD-TP.nc')
 print('Reading ', ERA5_filename)
 ERA5land = xr.open_dataset(ERA5_filename, engine = 'netcdf4')
 print('Read ERA5land')
@@ -66,20 +66,20 @@ print('GLC_AOI.to_dataframe')
 de = de.reset_index()
 
 # Only keep the locations where there is lichen during the current year
-dd = de.loc[(de['Lichen'] > 0) & (de['Lichen'] <= 100)]
+dd = de[(de['Lichen'] > 0) & (de['Lichen'] <= 100)]
 
 ## Each year in a separate dataset
 
-# Loop starts here <--------------------------------------------------------------- 2015-2019 for reanalysis-era5-land_hourly_2015-01-01_2019-12-31_Troms-Finnmark_T2m-SD-TP.nc
+# Loop starts here <------------------------------------------------------------------------------
 
 Number_of_days = 183
-for Year in range(2015, 2019):
-    print('x = WLC(' + str(Year)+ ') joined with ERA5land(' + str(Year) + ')')
+for Year in range(2015, 2020):
+    print('x = WLC(' + str(Year)+ ') joined with ERA5land(' + str(Year + 1) + ')')
     print('y = WLC(' + str(Year + 1) + ')')
 
 # Only keep locations for the current year
-    df = dd.loc[de['time'] == str(Year) + '-01-01']
-    dg = dd.loc[dd['time'] == str(Year + 1) + '-01-01']
+    df = dd[de['time'] == str(Year) + '-01-01']
+    dg = dd[dd['time'] == str(Year + 1) + '-01-01']
 
 # Replace NaNs by 0
     for col in ['Bare', 'Grass', 'Lichen', 'Shrub', 'Tree']:
@@ -122,7 +122,7 @@ for Year in range(2015, 2019):
 ## Extract ERA5 data for  the selected period of the year (when RoS events mostly occur)
 
     ERA5 = ERA5land.sel(time=slice(str(Year + 1) + '-01-01', str(Year + 1)  + '-12-31'))
-    ERA5 = ERA5.isel(time=range(Number_of_days * 24))
+    ERA5 = ERA5.isel(time=range(Number_of_days * 24)) 
     ERA5 = ERA5.isel(expver = 0)
 
 # Extract ERA5 't2m' field 
@@ -134,7 +134,7 @@ for Year in range(2015, 2019):
 #
 # total rainfall volume of at least 20 mm within 12 h
 # or
-# air temperatures above 0◦C (273.15K)
+# air temperatures above 0C (273.15K)
 # and¶
 # initial snowpack depth of at least 10 cm
 
@@ -144,26 +144,26 @@ for Year in range(2015, 2019):
 
     df_t2m = ERA5_t2m.stack(z=['latitude', 'longitude']).to_pandas().transpose().reset_index()
     df_tp = ERA5_tp.stack(z=['latitude', 'longitude']).to_pandas().transpose().reset_index()
-
-# Add combined lon_lat column to df
-    df_t2m['lon_lat'] = (df_t2m['longitude'] * 100).astype('int') + (df_t2m['latitude'] * 100).astype('int') / 100000
-    df_tp['lon_lat'] = (df_tp['longitude'] * 100).astype('int') + (df_tp['latitude'] * 100).astype('int') / 100000
-
-# Drop latitude and longitude columns which are not used anymore in df
-    df_t2m = df_t2m.drop(columns=['latitude', 'longitude'])
     df_tp = df_tp.drop(columns=['latitude', 'longitude'])
-    
+
 # Create labels for ERA5-land variables to replace the dates
-    label_t2m = list()
+    label_t2m = ['latitude', 'longitude']
     label_tp = list()
     for i in range(Number_of_days * 24):
         label_t2m.append('t2m_'+ str(i))
         label_tp.append('tp_'+ str(i))
-    label_t2m.append('lon_lat')
-    label_tp.append('lon_lat')
-    
+
     df_t2m.set_axis(label_t2m, axis="columns", inplace=True)
     df_tp.set_axis(label_tp, axis="columns", inplace=True)
+
+##  Glue together df_t2m and df_tp
+    df = pd.concat([df_t2m, df_tp], axis = 1)
+
+# Add combined lon_lat column to df
+    df['lon_lat'] = (df['longitude'] * 100).astype('int') + (df['latitude'] * 100).astype('int') / 100000
+
+# Drop latitude and longitude columns which are not used anymore in df
+    df = df.drop(columns=['latitude', 'longitude'])
     
 # Add combined lon_lat column to dv x & y
     dvx['lon_lat'] = (dvx['ERA5_lon'] * 100).astype('int') + (dvx['ERA5_lat'] * 100).astype('int') / 100000
@@ -176,23 +176,14 @@ for Year in range(2015, 2019):
     dwx_pandas = dwx.to_pandas_df()
     dwy_pandas = dwy.to_pandas_df()
 
-## Join dwx (WLC) with df (ERA5 t2m)
-    dx_t2m = dwx_pandas.set_index('lon_lat').join(df_t2m.set_index('lon_lat'), on='lon_lat')
-    print('dwx (WLC) joined with df (ERA5 t2m)')
+## Join dwx (WLC) with df (ERA5 t2m-tp)
+    dx = dwx_pandas.set_index('lon_lat').join(df.set_index('lon_lat'), on='lon_lat')
+    print('dwx (WLC) joined with df (ERA5 t2m-tp)')
 
-## Join dwx (WLC) with df (ERA5 tp)
-    dx_tp = dwx_pandas.set_index('lon_lat').join(df_tp.set_index('lon_lat'), on='lon_lat')
-    print('dwx (WLC) joined with df (ERA5 tp)')
-    
-# Drop unused columns
-    dx_tp = dx_tp.drop(columns=['lon', 'lat', 'Bare', 'Grass', 'Lichen', 'Shrub', 'Tree'])
-    
-# Join dx_t2m & dx_tp
-    dx = dx_t2m.join(dx_tp)
-    
-# Drop rows with NaN Values & reindex
+# Drop the Rows with NaN Values
     dx = dx.dropna()
     dx = dx.reset_index()
+    dx = dx.drop(columns=['lon_lat'])    
     
 ## Save into **local** HDF5 file with header and no indices
     x_filename = os.path.join(path, 'x_' + str(Year) + '.hdf')
@@ -224,5 +215,7 @@ for Year in range(2015, 2019):
     y_filename = os.path.join(path, 'y_' + str(Year) + '.hdf')
     print(y_filename)
     dy.to_hdf(y_filename, key='dg', mode="w", index=False)
+    y_filename = os.path.join(path, 'y_' + str(Year) + '.csv')
+    dy.to_csv(y_filename, header=True, index=True, sep=',')
 
 print('Finished!')
