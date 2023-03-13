@@ -48,4 +48,4 @@ for file_name in file_list[0:-1]:
          dg.to_csv(output_filename, mode='a',  header=None, index=None, sep=',')
 
 
-print('Finished')
+print('Finished!')

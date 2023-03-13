@@ -14,7 +14,7 @@ from numpy.random import seed
 from tensorflow.random import set_seed
 print('Finished imports')
 
-Hlayers = 3
+Hlayers = 8
 Olayers = 1
 epochs = 10
 Hactivation = 'relu'
@@ -83,13 +83,7 @@ fig = lineplot.get_figure()
 loss_fig_file = os.path.join(path, 'outputs/' + expname + '_loss.png')
 fig.savefig(loss_fig_file) 
 
-model_file = os.path.join(path, 'outputs/' + expname)
+model_file = os.path.join(path, 'outputs/' + expname + '.h5')
 model.save(model_file)
-
-# Perform a prediction
-print('Forecasting')
-y_forecast = model.predict(X_test)
-forecast = pd.DataFrame(y_forecast, columns=y_test.columns)
-forecast
 
 print('Finished')

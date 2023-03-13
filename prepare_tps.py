@@ -3,7 +3,7 @@
 
 # Copernicus Global Land Cover data  from 2015-01-01 to 2019-12-31 already available as a netCDF file stored locally
 ## Troms og Finnmark
-### Mosses and lichens, bare, grass, shrubs and trees
+### Only mosses and lichens
 
 # Both the fractional cover, the ERA5 (2m temperature, total precipitation) values are normalized
 
@@ -34,11 +34,15 @@ GLC_AOI = GLC_AOI.rename(x='lon', y='lat', t='time')
 
 # Drop variables not directly of interest here
 GLC_AOI = GLC_AOI.drop_vars(['crs',
+                             'Bare_CoverFraction_layer',
                              'Crops_CoverFraction_layer',
+                             'Grass_CoverFraction_layer',
                              'Discrete_Classification_map', 
                              'Discrete_Classification_proba',
                              'Forest_Type_layer',
+                             'Shrub_CoverFraction_layer',
                              'Snow_CoverFraction_layer',
+                             'Tree_CoverFraction_layer',
                              'BuiltUp_CoverFraction_layer',
                              'PermanentWater_CoverFraction_layer',
                              'SeasonalWater_CoverFraction_layer',
@@ -46,11 +50,7 @@ GLC_AOI = GLC_AOI.drop_vars(['crs',
                              'Change_Confidence_layer',
                              'dataMask'])
 
-GLC_AOI = GLC_AOI.rename(Bare_CoverFraction_layer = 'Bare',
-                         Grass_CoverFraction_layer = 'Grass',
-                         MossLichen_CoverFraction_layer = 'Lichen',
-                         Shrub_CoverFraction_layer = 'Shrub',
-                         Tree_CoverFraction_layer = 'Tree')
+GLC_AOI = GLC_AOI.rename(MossLichen_CoverFraction_layer = 'Lichen')
 
 # Troms & Finnmark Global Land Cover area
 GLC_AOI_min_lon = GLC_AOI.lon.min()
@@ -59,14 +59,21 @@ GLC_AOI_min_lat = GLC_AOI.lat.min()
 GLC_AOI_max_lat = GLC_AOI.lat.max()
 print(GLC_AOI_min_lon.values, GLC_AOI_max_lon.values, GLC_AOI_min_lat.values, GLC_AOI_max_lat.values)
 
-de = GLC_AOI.to_dataframe()
+## Use the mask to only keep pixels with lichen every year
+mask = GLC_AOI['Lichen'].where(GLC_AOI['Lichen'] <= 100)
+mask = xr.where(mask > 0, 1, 0)
+mask = mask.sum(dim = 'time', min_count = 5, skipna=True)
+mask = xr.where(mask == 5, 1, 0)
+
+de = GLC_AOI.where(mask == 1)
+de = de.to_dataframe()
 
 print('GLC_AOI.to_dataframe')
 
-de = de.reset_index()
+# Drop the Rows with NaN Values
+de = de.dropna()
 
-# Only keep the locations where there is lichen during the current year
-dd = de[(de['Lichen'] > 0) & (de['Lichen'] <= 100)]
+de = de.reset_index()
 
 ## Each year in a separate dataset
 
@@ -78,28 +85,12 @@ for Year in range(2015, 2020):
     print('y = WLC(' + str(Year + 1) + ')')
 
 # Only keep locations with lichen for the current year
-    df = dd[dd['time'] == str(Year) + '-01-01']
+    df = de[de['time'] == str(Year) + '-01-01']
     dg = de[de['time'] == str(Year + 1) + '-01-01']
 
-# Replace NaNs by 0
-    for col in ['Bare', 'Grass', 'Lichen', 'Shrub', 'Tree']:
-        print(col)
-        df[col] = df[col].fillna(0)
-        dg[col] = dg[col].fillna(0)
-
-# Calculate total fractional coverage of bare, grass, lichen, shrub and tree (should be 100)
-    df['Total']  = (df['Bare'] + df['Grass'] + df['Lichen'] + df['Shrub'] + df['Tree'])
-    dg['Total']  = (dg['Bare'] + dg['Grass'] + dg['Lichen'] + dg['Shrub'] + dg['Tree'])
-
 # Normalize the fractional cover
-    for col in ['Bare', 'Grass', 'Lichen', 'Shrub', 'Tree']:
-        print(col)
-        df[col] = df[col] / df['Total']
-        dg[col] = dg[col] / dg['Total']
-
-# Drop the *Total* column
-    df = df.drop(['Total'], axis=1)
-    dg = dg.drop(['Total'], axis=1)
+    df['Lichen'] = df['Lichen'].div(100)
+    dg['Lichen'] = dg['Lichen'].div(100)
 
 # Convert to VAEX
     dvx = vaex.from_pandas(df)
@@ -211,11 +202,6 @@ for Year in range(2015, 2020):
 ## Join dwx with dwy
     dy = dwx_pandas.set_index('lon_lat').join(dwy_pandas.set_index('lon_lat'), on='lon_lat')
     print('dwx joined with dwy')
-
-# Replace NaNs by 0
-    for col in ['Bare', 'Grass', 'Lichen', 'Shrub', 'Tree']:
-        print(col)
-        dy[col] = dy[col].fillna(0)
 
     dy = dy.reset_index().drop(columns=['lon_lat'])
 

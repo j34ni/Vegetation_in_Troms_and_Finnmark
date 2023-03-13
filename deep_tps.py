@@ -28,18 +28,12 @@ print('Reading ', output_file)
 output = pd.read_csv(output_file)
 print('Read')
 
-output = output.drop(columns=['Bare', 'Grass', 'Shrub', 'Tree'])
-output.rename(columns = {'Lichen': 'New_lichen'}, inplace = True)
-
 print('Output')
 print(f'Number of rows: {output.shape[0]:,}')
-print(f'Number of columns: {output.shape[2]}')
-
-output = output.drop(columns=['Bare', 'Grass', 'Shrub', 'Tree'])
-output.rename(columns = {'Lichen': 'New_lichen'}, inplace = True)
+print(f'Number of columns: {output.shape[1]}')
 
 # Split data into training and test sets, 
-X_train, X_test, y_train, y_test = train_test_split(input, output, test_size = 0.2, random_state = 0, shuffle = True)
+X_train, X_test, y_train, y_test = train_test_split(input, output, test_size = 0.5, random_state = 0, shuffle = True)
 
 print('X_train')
 X_train
@@ -61,4 +55,4 @@ y_test
 y_test_file = os.path.join(path, 'y_lichen_test.hdf')
 y_test.to_hdf(y_test_file, key='dg', mode="w", index=False)
 
-print('Finishedi!')
+print('Finished!')
