@@ -1,5 +1,5 @@
 # Vegetation_in_Troms_and_Finnmark
-Evaluate potential correlations between the occurrence of extreme events and some types of Arctic vegetation dying (in particular mosses and lichens).
+Evaluate potential correlations between the occurrence of extreme winter warming and some types of Arctic vegetation dying (in particular mosses and lichens).
 
 This is what the various Jupyter notebooks do:
 
@@ -24,3 +24,11 @@ and produces .hdf files with x_year and y_year);
  * trains the model a number of epocs
  * plots the loss history
  * performs a forecast.
+
+**CGLC_download.ipynb**
+ * downloads Coperncus Global Land Cover data (100x100m horizontal resolution)
+ 
+**ERA5-land_download.ipynb**
+ * downloads ERA5-land data hourly, from 2015 
+
+(Note that writing to CESNET' s3 requires credentials bosdisclosed i the notebooks)
