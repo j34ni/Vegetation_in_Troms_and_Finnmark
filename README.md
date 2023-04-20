@@ -20,7 +20,7 @@ and produces .hdf files with x_year and y_year);
  * defines the hidden layer and the corresponding activation function
  * creates the output layer with the output activation
  * creates a Keras model
- * compile the model with a Categorical Crossentropy loss function and the Adam optimizer
+ * compile the model with a Huber loss function and the Adadelta optimizer
  * trains the model a number of epocs
  * plots the loss history
  * performs a forecast.
